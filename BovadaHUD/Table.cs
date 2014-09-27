@@ -37,6 +37,15 @@ namespace BovadaHUD
         }
 
 
+        public IList<Seat> Seats
+        {
+            get
+            {
+                return seats;
+            }
+        }
+
+
         public void update()
         {
             Bitmap bitmap = capture.capture();

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows.Forms;
 using Tesseract;
 
@@ -14,8 +15,10 @@ namespace BovadaHUD
 {
     public partial class Form1 : Form
     {
-        TableFinder finder;
-        Table table;
+        private TableFinder finder;
+        private Table table;
+
+        System.Timers.Timer tableTimer;
 
         public Form1()
         {
@@ -30,15 +33,22 @@ namespace BovadaHUD
                 return;
             }
 
-            while ( true )
+            tableTimer = new System.Timers.Timer(500);
+            tableTimer.Elapsed += OnTimedEvent;
+            tableTimer.Start();
+        }
+
+        private void OnTimedEvent(Object source, ElapsedEventArgs e)
+        {
+            table.update();
+
+            Invoke((MethodInvoker)delegate
             {
-                table.update();
-
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-
-                Thread.Sleep(500);
-            }
+                for ( int i = 0; i < table.Seats.Count; ++i )
+                {
+                    Console.WriteLine(i + ": " + table.Seats[i].Stack);
+                }
+            });
         }
     }
 }

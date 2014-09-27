@@ -10,7 +10,7 @@ namespace BovadaHUD
 {
     class BitmapUtils
     {
-        public static Bitmap Crop( Bitmap bmp, RECT rect, byte color )
+        public static RECT Crop( Bitmap bmp, RECT rect, byte color )
         {
             RECT reverse = new RECT(rect.Right, rect.Bottom, rect.Left, rect.Top);
 
@@ -45,23 +45,22 @@ namespace BovadaHUD
                 }
             }
 
-            Bitmap bitmap = bmp.Clone(reverse, bmp.PixelFormat);
-            return bitmap;
+            return reverse;
         }
 
-        public static IList<Bitmap> Chop( Bitmap bmp, byte color )
+        public static IList<RECT> Chop( Bitmap bmp, RECT crop, byte color )
         {
-            List<Bitmap> list = new List<Bitmap>();
-            RECT rect = new RECT(0, 0, bmp.Size.Width, bmp.Size.Height);
+            List<RECT> list = new List<RECT>();
+            RECT rect = new RECT(crop.Left, crop.Top, crop.Right, crop.Bottom);
 
             Boolean found = false;
             Boolean oldFound = false;
 
-            for (int x = 0; x < bmp.Size.Width; ++x )
+            for (int x = crop.Left; x < crop.Right; ++x )
             {
                 found = false;
 
-                for ( int y = 0; y < bmp.Size.Height; ++y )
+                for ( int y = crop.Top; y < crop.Bottom; ++y )
                 {
                     found = found || bmp.GetPixel(x, y).R >= color;
                 }
@@ -81,7 +80,7 @@ namespace BovadaHUD
 
             if ( found )
             {
-                rect.Right = bmp.Size.Width;
+                rect.Right = crop.Right;
                 list.Add(Crop(bmp, rect, color));
             }
             

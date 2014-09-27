@@ -26,27 +26,52 @@ namespace BovadaHUD
             this.stackFont = stackFont;
         }
 
+
+        public int Stack
+        {
+            get { return stack; }
+        }
+
         public void Process( Bitmap bmp )
         {
-            Bitmap choppedStack = BitmapUtils.Crop(bmp, config.Stacks[index], 0xd0);
-            IList<Bitmap> bmpsStack = BitmapUtils.Chop(choppedStack, 0xd0);
+            RECT choppedStack = BitmapUtils.Crop(bmp, config.Stacks[index], 0xd0);
+
+            IList<RECT> rectsStack = BitmapUtils.Chop( bmp, choppedStack, 0xd0);
             StringBuilder builder = new StringBuilder();
 
-            foreach( Bitmap bmpStack in bmpsStack )
+            int i = 0;
+
+            foreach( RECT rectStack in rectsStack )
             {
-                char letter = stackFont.GetCharacter(bmpStack);
+                char letter = stackFont.GetCharacter( bmp, rectStack );
 
                 if ( letter != '\0' && letter != '.' && letter != ',' && letter != '$' )
                 {
                     builder.Append(letter);
                 }
 
-                bmpStack.Dispose();
+                if ( i >= 10 )
+                {
+                    break;
+                }
             }
 
-            Console.WriteLine("{0} {1}", index, builder.ToString());
+            // Console.WriteLine("{0} {1}", index, builder.ToString());
 
-            choppedStack.Dispose();
+            if ( i < 10 && builder.Length > 0 )
+            {
+                try
+                {
+                    stack = Convert.ToInt32(builder.ToString());
+                }
+                catch (Exception e) {
+                    stack = 0;
+                }
+            }
+            else
+            {
+                stack = 0;
+            }
         }
     }
 }

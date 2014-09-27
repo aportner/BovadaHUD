@@ -12,7 +12,7 @@ namespace BovadaHUD
     {
         private Bitmap font;
 
-        private IList<Bitmap> bitmaps;
+        private IList<RECT> rects;
 
         private char[] characters;
 
@@ -20,31 +20,30 @@ namespace BovadaHUD
         public StackFont()
         {
             font = new Bitmap("stackfont.png");
-            bitmaps = BitmapUtils.Chop(font, 0xd0);
+            rects = BitmapUtils.Chop(font, new RECT( 0, 0, font.Size.Width, font.Size.Height ), 0xd0);
             characters = new char[]{ '$', '.', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' };
 
             /*
-            for (int i = 0; i < bitmaps.Count; ++i)
+            for (int i = 0; i < rects.Count; ++i)
             {
-                Bitmap bmpChop = bitmaps.ElementAt(i);
+                RECT rectChop = rects[i];
 
-                StringBuilder builder = new StringBuilder("C:\\users\\Andrew\\Downloads\\stackfont");
-                builder.Append(i);
-                builder.Append(".jpg");
-
-                bmpChop.Save(builder.ToString());
-            }*/
+                Bitmap bmpChop = font.Clone(rectChop, font.PixelFormat);
+                bmpChop.Save("C:\\users\\Andrew\\Downloads\\stackfont" + i + ".png");
+                bmpChop.Dispose();
+            }
+             */
         }
 
 
-        public char GetCharacter( Bitmap bmp )
+        public char GetCharacter( Bitmap bmp, RECT rect )
         {
             char result = '\0';
             int maxCertainty = 0;
 
-            for (int i = 0; i < bitmaps.Count; ++i )
+            for (int i = 0; i < rects.Count; ++i )
             {
-                int certainty = Compare(bmp, bitmaps.ElementAt(i), 0xd0);
+                int certainty = Compare( bmp, rect, font, rects[ i ], 0xd0);
 
                 if ( certainty > 90 && certainty > maxCertainty )
                 {
@@ -56,20 +55,20 @@ namespace BovadaHUD
             return result;
         }
 
-        public int Compare( Bitmap bmp, Bitmap bmpFont, byte color )
+        public int Compare( Bitmap bmp, RECT rect, Bitmap bmpFont, RECT rectFont, byte color )
         {
             int result = 0;
 
-            for (int x = 0; x < bmp.Size.Width; ++x )
+            for (int x = 0; x < rect.Width; ++x )
             {
-                for ( int y = 0; y < bmp.Size.Height; ++y )
+                for ( int y = 0; y < rect.Height; ++y )
                 {
-                    Color cBmp = bmp.GetPixel(x, y);
+                    Color cBmp = bmp.GetPixel( rect.Left + x, rect.Top + y);
                     Color cFont = Color.Black;
 
-                    if ( x < bmpFont.Size.Width && y < bmpFont.Size.Height )
+                    if ( x < rectFont.Width && y < rectFont.Height )
                     {
-                        cFont = bmpFont.GetPixel(x, y);
+                        cFont = bmpFont.GetPixel( rectFont.Left + x, rectFont.Top + y);
                     }
 
                     if ( cBmp.R > color && cFont.R > color || cBmp.R < color && cFont.R < color )
@@ -79,9 +78,7 @@ namespace BovadaHUD
                 }
             }
 
-            // Console.WriteLine("{0} {1}", result, bmp.Size.Width * bmp.Size.Height );
-
-            return result * 100 / ( bmp.Size.Width * bmp.Size.Height );
+            return result * 100 / ( rect.Width * rect.Height );
         }
     }
 }
